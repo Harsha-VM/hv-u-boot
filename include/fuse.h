@@ -25,5 +25,6 @@ int fuse_read(u32 bank, u32 word, u32 *val);
 int fuse_sense(u32 bank, u32 word, u32 *val);
 int fuse_prog(u32 bank, u32 word, u32 val);
 int fuse_override(u32 bank, u32 word, u32 val);
+int fuse_writebuff(const char *vendor, ulong addr);
 
 #endif	/* _FUSE_H_ */
