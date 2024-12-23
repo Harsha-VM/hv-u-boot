@@ -14,8 +14,20 @@
 #include <mapmem.h>
 #include <vsprintf.h>
 #include <linux/errno.h>
+#include <stdlib.h>
 
 static int strtou32(const char *str, unsigned int base, u32 *result)
+{
+	char *ep;
+
+	*result = simple_strtoul(str, &ep, base);
+	if (ep == str || *ep != '\0')
+		return -EINVAL;
+
+	return 0;
+}
+
+static int strtoul(const char *str, unsigned int base, ulong *result)
 {
 	char *ep;
 
@@ -50,13 +62,18 @@ static int do_fuse(struct cmd_tbl *cmdtp, int flag, int argc,
 	ulong addr;
 	void *buf, *start;
 	int ret, i;
+	char *vendor;
 
 	argc -= 2 + confirmed;
 	argv += 2 + confirmed;
-
-	if (argc < 2 || strtou32(argv[0], 0, &bank) ||
+	if (!strcmp(op, "writebuff")) {
+		if (argc < 2 || strtoul(argv[1], 16, &addr))
+		return CMD_RET_USAGE;
+	} else {
+		if (argc < 2 || strtou32(argv[0], 0, &bank) ||
 			strtou32(argv[1], 0, &word))
 		return CMD_RET_USAGE;
+	}
 
 	if (!strcmp(op, "read")) {
 		if (argc == 2)
@@ -164,6 +181,23 @@ static int do_fuse(struct cmd_tbl *cmdtp, int flag, int argc,
 			if (ret)
 				goto err;
 		}
+	} else if (!strcmp(op, "writebuff")) {
+		if (argc < 2)
+			return CMD_RET_USAGE;
+
+		vendor = strdup(argv[1]);
+		if(!vendor) {
+			return -EINVAL;
+		}
+
+		printf("Programming fuses with vendor %s and addr 0x%.8lx\n",
+				vendor, addr);
+		if (!confirmed && !confirm_prog())
+			return CMD_RET_FAILURE;
+		ret = fuse_writebuff(vendor, addr);
+		free(vendor);
+		if (ret)
+			goto err;
 	} else {
 		return CMD_RET_USAGE;
 	}
@@ -189,5 +223,7 @@ U_BOOT_CMD(
 	"fuse prog [-y] <bank> <word> <hexval> [<hexval>...] - program 1 or\n"
 	"    several fuse words, starting at 'word' (PERMANENT)\n"
 	"fuse override <bank> <word> <hexval> [<hexval>...] - override 1 or\n"
-	"    several fuse words, starting at 'word'"
+	"    several fuse words, starting at 'word'\n"
+	"fuse writebuff <vendor> <addr> - program fuse data for a vendor\n"
+	"    using a structured buffer in memory starting at 'addr'"
 );
