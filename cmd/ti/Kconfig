@@ -16,4 +16,11 @@ config CMD_PD
 	   K3 power domain driver must be enabled for the u-boot; by
 	   default it is only enabled for SPL.
 
+config K3_FUSE
+	bool "Enable K3 fuse wrapper providing the fuse sub-system commands"
+	depends on ARCH_K3
+	help
+	  Fuse sub-system commands for K3 architecure. If you say Y here, 
+	  you will get support for the fuse API for K3 architecture.
+
 endmenu

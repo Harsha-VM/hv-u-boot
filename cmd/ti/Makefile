@@ -3,3 +3,4 @@
 
 obj-$(CONFIG_CMD_DDR3) += ddr3.o
 obj-$(CONFIG_CMD_PD) += pd.o
+obj-$(CONFIG_K3_FUSE) += k3_fuse.o
