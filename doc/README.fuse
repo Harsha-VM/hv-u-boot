@@ -61,7 +61,21 @@ Functions / commands:
       fuses have already been programmed or are locked (if the SoC allows to
       override a locked fuse).
 
+   int fuse_writebuff(ulong addr);
+   fuse writebuff [-y] <addr>
+      Program fuse data using a structured buffer in memory starting at 'addr'.
+      This operation directly affects the fusebox and is irreversible.
+
+      The structure of the buffer should contain all necessary details for
+      programming fuses, such as the values to be written to the fuse, optional
+      metadata for validation or programming constraints and any configuration
+      data required for the operation. Define CONFIG_CMD_FUSE_WRITEBUFF to
+      enable the fuse writebuff command.
+
 Configuration:
 
    CONFIG_CMD_FUSE
       Define this to enable the fuse commands.
+
+   CONFIG_CMD_FUSE_WRITEBUFF
+      Define this to enable the fuse writebuff command.
