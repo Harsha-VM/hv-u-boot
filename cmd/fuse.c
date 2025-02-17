@@ -43,9 +43,14 @@ static int do_fuse(struct cmd_tbl *cmdtp, int flag, int argc,
 	argc -= 2 + confirmed;
 	argv += 2 + confirmed;
 
-	if (argc < 2 || !(str2long(argv[0], (ulong *)&bank)) ||
-			!(str2long(argv[1], (ulong *)&word)))
-		return CMD_RET_USAGE;
+	if (IS_ENABLED(CONFIG_CMD_FUSE_WRITEBUFF) && !strcmp(op, "writebuff")) {
+		if (argc != 1 || !(str2long(argv[0], &addr)))
+			return CMD_RET_USAGE;
+	} else {
+		if (argc < 2 || !(str2long(argv[0], (ulong *)&bank)) ||
+				!(str2long(argv[1], (ulong *)&word)))
+			return CMD_RET_USAGE;
+	}
 
 	if (!strcmp(op, "read")) {
 		if (argc == 2)
@@ -153,6 +158,15 @@ static int do_fuse(struct cmd_tbl *cmdtp, int flag, int argc,
 			if (ret)
 				goto err;
 		}
+	} else if (IS_ENABLED(CONFIG_CMD_FUSE_WRITEBUFF) && !strcmp(op, "writebuff")) {
+		printf("Programming fuses using a structured buffer in memory "
+				"starting at addr 0x%lx\n", addr);
+		if (!confirmed && !confirm_prog())
+			return CMD_RET_FAILURE;
+
+		ret = fuse_writebuff(addr);
+		if (ret)
+			goto err;
 	} else {
 		return CMD_RET_USAGE;
 	}
@@ -178,5 +192,9 @@ U_BOOT_CMD(
 	"fuse prog [-y] <bank> <word> <hexval> [<hexval>...] - program 1 or\n"
 	"    several fuse words, starting at 'word' (PERMANENT)\n"
 	"fuse override <bank> <word> <hexval> [<hexval>...] - override 1 or\n"
-	"    several fuse words, starting at 'word'"
+	"    several fuse words, starting at 'word'\n"
+#ifdef CONFIG_CMD_FUSE_WRITEBUFF
+	"fuse writebuff [-y] <addr> - program fuse data\n"
+	"    using a structured buffer in memory starting at 'addr'\n"
+#endif /* CONFIG_CMD_FUSE_WRITEBUFF */
 );
