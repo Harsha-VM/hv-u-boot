@@ -4,3 +4,4 @@
 obj-$(CONFIG_CMD_DDR3) += ddr3.o
 obj-$(CONFIG_CMD_DDRSS) += ddrss.o
 obj-$(CONFIG_CMD_PD) += pd.o
+obj-$(CONFIG_CMD_DEBUG_UNLOCK) += debug_unlock.o

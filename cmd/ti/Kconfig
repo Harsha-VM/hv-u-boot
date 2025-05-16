@@ -23,4 +23,11 @@ config CMD_PD
 	   K3 power domain driver must be enabled for the u-boot; by
 	   default it is only enabled for SPL.
 
+config CMD_DEBUG_UNLOCK
+	bool "Enable debug unlock"
+	depends on ARCH_K3
+	help
+	   Debug unlock command for K3 architecure. If you say Y here, 
+	   you will get support for the debug unlock for K3 architecture.
+
 endmenu
