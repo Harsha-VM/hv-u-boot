@@ -17,43 +17,44 @@ int fuse_read(u32 bank, u32 word, u32 *val)
 {
 	struct arm_smccc_res res;
 
-	if (bank != 0U) {
-		printf("Invalid bank argument, ONLY bank 0 is supported\n");
+	if (bank > 1U) {
+		printf("Invalid bank argument\n");
 		return -EINVAL;
 	}
-
 	/* Make SiP SMC call and send the word in the parameter register */
-	arm_smccc_smc(K3_SIP_OTP_READ, word,
-		      0, 0, 0, 0, 0, 0, &res);
+	arm_smccc_smc(K3_SIP_OTP_READ, bank, word,
+		      0, 0, 0, 0, 0, &res);
 
 	*val = res.a1;
 	if (res.a0 != 0)
-		printf("SMC call failed: Error code %lu\n", res.a0);
+		printf("SMC call failed: Error code %ld\n", res.a0);
 
 	return res.a0;
 }
 
 int fuse_sense(u32 bank, u32 word, u32 *val)
 {
-	return -EPERM;
+	return fuse_read(bank, word, val);
 }
 
 int fuse_prog(u32 bank, u32 word, u32 val)
 {
 	struct arm_smccc_res res;
-	u32 mask = val;
 
-	if (bank != 0U) {
-		printf("Invalid bank argument, ONLY bank 0 is supported\n");
+	if (bank > 1U) {
+		printf("Invalid bank argument\n");
 		return -EINVAL;
 	}
 
 	/* Make SiP SMC call and send the word, val and mask in the parameter register */
-	arm_smccc_smc(K3_SIP_OTP_WRITE, word,
-		      val, mask, 0, 0, 0, 0, &res);
+	arm_smccc_smc(K3_SIP_OTP_WRITE, bank, word,
+		      val, 0x1ffffffU, 0, 0, 0, &res);
 
 	if (res.a0 != 0)
 		printf("SMC call failed: Error code %lu\n", res.a0);
+
+	if (res.a1 != val)
+		printf("Readback failed, written %x readback %lx\n", val, res.a1);
 
 	return res.a0;
 }
